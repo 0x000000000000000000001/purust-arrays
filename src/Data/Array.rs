@@ -137,3 +137,54 @@ pub fn Data_Array_findIndexImpl() -> UnknownType {
         ..Default::default()
     })
 }
+
+pub fn Data_Array_filterImpl() -> UnknownType {
+    perceus_ptr::PerceusPtr::new(Record_a {
+        call: Some(Rc::new(move |mut f: UnknownType| -> UnknownType {
+            perceus_ptr::PerceusPtr::new(Record_a {
+                call: Some(Rc::new(move |mut xs: UnknownType| -> UnknownType {
+                    let mut f = f.clone();
+                    let arr = xs.init_array.as_ref().unwrap();
+                    let mut res = Vec::new();
+                    for x in arr.iter() {
+                        let ok = f.call.clone().unwrap()(x.clone());
+                        if ok.init_bool.unwrap() {
+                            res.push(x.clone());
+                        }
+                    }
+                    crate::mk_array(res)
+                })),
+                ..Default::default()
+            })
+        })),
+        ..Default::default()
+    })
+}
+
+pub fn Data_Array_rangeImpl() -> UnknownType {
+    perceus_ptr::PerceusPtr::new(Record_a {
+        call: Some(Rc::new(move |mut start: UnknownType| -> UnknownType {
+            perceus_ptr::PerceusPtr::new(Record_a {
+                call: Some(Rc::new(move |mut end: UnknownType| -> UnknownType {
+                    let s = start.init_int.unwrap();
+                    let e = end.init_int.unwrap();
+                    let mut res = Vec::new();
+                    if s <= e {
+                        for i in s..=e {
+                            res.push(crate::mk_int(i));
+                        }
+                    } else {
+                        let mut i = s;
+                        while i >= e {
+                            res.push(crate::mk_int(i));
+                            i -= 1;
+                        }
+                    }
+                    crate::mk_array(res)
+                })),
+                ..Default::default()
+            })
+        })),
+        ..Default::default()
+    })
+}
