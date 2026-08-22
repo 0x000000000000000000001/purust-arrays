@@ -17,7 +17,7 @@ pub fn Data_Array_unconsImpl() -> UnknownType {
                             let mut next = next.clone();
                             let arr = xs.unwrap_array();
                             if arr.is_empty() {
-                                empty.unwrap_func()(crate::Value::Record(perceus_ptr::PerceusPtr::new(crate::Record_a { ..Default::default() })))
+                                empty.unwrap_func()(crate::Value::Record_a(perceus_ptr::PerceusPtr::new(crate::Record_a { ..Default::default() })))
                             } else {
                                 let head = arr[0].clone();
                                 let tail = arr[1..].to_vec();
