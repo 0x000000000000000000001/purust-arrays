@@ -4,7 +4,7 @@ pub fn Data_Array_NonEmpty_Internal_foldl1Impl() -> crate::UnknownType {
                     let arr = xs.unwrap_array();
                     let mut acc = arr[0].clone();
                     for i in 1..arr.len() {
-                        acc = f.unwrap_func()(acc).unwrap_func()(arr[i].clone());
+                        acc = f.unwrap_func1()(acc).unwrap_func1()(arr[i].clone());
                     }
                     acc
                 }))
@@ -17,7 +17,7 @@ pub fn Data_Array_NonEmpty_Internal_foldr1Impl() -> crate::UnknownType {
                     let arr = xs.unwrap_array();
                     let mut acc = arr[arr.len() - 1].clone();
                     for i in (0..arr.len() - 1).rev() {
-                        acc = f.unwrap_func()(arr[i].clone()).unwrap_func()(acc);
+                        acc = f.unwrap_func1()(arr[i].clone()).unwrap_func1()(acc);
                     }
                     acc
                 }))

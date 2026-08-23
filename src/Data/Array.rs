@@ -17,11 +17,11 @@ pub fn Data_Array_unconsImpl() -> UnknownType {
                             let mut next = next.clone();
                             let arr = xs.unwrap_array();
                             if arr.is_empty() {
-                                empty.unwrap_func()(crate::Value::Record_a(perceus_ptr::PerceusPtr::new(crate::Record_a { ..Default::default() })))
+                                empty.unwrap_func1()(crate::Value::Record_a(perceus_ptr::PerceusPtr::new(crate::Record_a { ..Default::default() })))
                             } else {
                                 let head = arr[0].clone();
                                 let tail = arr[1..].to_vec();
-                                next.unwrap_func()(head).unwrap_func()(crate::mk_array(tail))
+                                next.unwrap_func1()(head).unwrap_func1()(crate::mk_array(tail))
                             }
                         }))
                 }))
@@ -43,7 +43,7 @@ pub fn Data_Array_indexImpl() -> UnknownType {
                                     if idx_raw < 0 || idx_raw >= arr.len() as i64 {
                                         nothing
                                     } else {
-                                        just.unwrap_func()(arr[idx_raw as usize].clone())
+                                        just.unwrap_func1()(arr[idx_raw as usize].clone())
                                     }
                                 }))
                         }))
@@ -81,9 +81,9 @@ pub fn Data_Array_findIndexImpl() -> UnknownType {
                                     let mut f = f.clone();
                                     let arr = xs.unwrap_array();
                                     for (i, x) in arr.iter().enumerate() {
-                                        let res = f.unwrap_func()(x.clone());
+                                        let res = f.unwrap_func1()(x.clone());
                                         if res.unwrap_bool() {
-                                            return just.unwrap_func()(mk_int(i as i64));
+                                            return just.unwrap_func1()(mk_int(i as i64));
                                         }
                                     }
                                     nothing
@@ -100,7 +100,7 @@ pub fn Data_Array_filterImpl() -> UnknownType {
                     let arr = xs.unwrap_array();
                     let mut res = Vec::new();
                     for x in arr.iter() {
-                        let ok = f.unwrap_func()(x.clone());
+                        let ok = f.unwrap_func1()(x.clone());
                         if ok.unwrap_bool() {
                             res.push(x.clone());
                         }
