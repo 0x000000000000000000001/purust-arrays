@@ -1,0 +1,263 @@
+singleton should construct an array with a single value
+range should create an inclusive array of integers for the specified start and end
+replicate should produce an array containg an item a specified number of times
+replicateA should perform the monadic action the correct number of times
+replicateA should be stack safe
+null should return false for non-empty arrays
+null should return true for an empty array
+length should return the number of items in an array
+cons should add an item to the start of an array
+snoc should add an item to the end of an array
+insert should add an item at the appropriate place in a sorted array
+insertBy should add an item at the appropriate place in a sorted array using the specified comparison
+head should return a Just-wrapped first value of a non-empty array
+head should return Nothing for an empty array
+last should return a Just-wrapped last value of a non-empty array
+last should return Nothing for an empty array
+tail should return a Just-wrapped array containing all the items in an array apart from the first for a non-empty array
+tail should return Nothing for an empty array
+init should return a Just-wrapped array containing all the items in an array apart from the first for a non-empty array
+init should return Nothing for an empty array
+uncons should return nothing when used on an empty array
+uncons should split an array into a head and tail record when there is at least one item
+unsnoc should return nothing when used on an empty array
+unsnoc should split an array into an init and last record when there is at least one item
+(!!) should return Just x when the index is within the bounds of the array
+(!!) should return Nothing when the index is outside of the bounds of the array
+elem should return true if the array contains the given element at least once
+notElem should return true if the array does not contain the given element
+elemIndex should return the index of an item that a predicate returns true for in an array
+elemLastIndex should return the last index of an item in an array
+find should return the first element for which a predicate returns true in an array
+findMap should return the mapping of the first element that satisfies the given predicate
+findIndex should return the index of an item that a predicate returns true for in an array
+findLastIndex should return the last index of an item in an array
+insertAt should add an item at the specified index
+insertAt should return Nothing if the index is out of A.range
+deleteAt should remove an item at the specified index
+deleteAt should return Nothing if the index is out of A.range
+updateAt should replace an item at the specified index
+updateAt should return Nothing if the index is out of A.range
+modifyAt should update an item at the specified index
+modifyAt should return Nothing if the index is out of A.range
+alterAt should update an item at the specified index when the function returns Just
+alterAt should drop an item at the specified index when the function returns Nothing
+alterAt should return Nothing if the index is out of A.range
+intersperse should return the original array when given an array with zero or one elements
+intersperse should insert the given element in-between each element in an array with two or more elements
+reverse should reverse the order of items in an array
+concat should join an array of arrays
+concatMap should be equivalent to (concat <<< map)
+filter should remove items that don't match a predicate
+splitAt should split the array at the given number of elements
+filterA should remove items that don't match a predicate while using an applicative behaviour
+filterA should apply effects in the right order
+mapMaybe should transform every item in an array, throwing out Nothing values
+catMaybe should take an array of Maybe values and throw out Nothings
+mapWithIndex applies a function with an index for every element
+updateAtIndices changes the elements at specified indices
+modifyAtIndices modifies the elements at specified indices
+transpose swaps rows and columns for a regular two-dimension array
+transpose skips elements when rows don't match
+transpose [] == []
+transpose (singleton []) == []
+scanl should return an array that stores the accumulated value at each step
+scanl should return the same results as its Foldable counterpart
+scanr should return an array that stores the accumulated value at each step
+scanr should return the same results as its Foldable counterpart
+sort should reorder a list into ascending order based on the result of compare
+sortBy should reorder a list into ascending order based on the result of a comparison function
+sortBy should not reorder elements that are equal according to a comparison function
+sortWith should reorder a list into ascending order based on the result of compare over a projection
+sortWith should not reorder elements that are equal according to a projection
+take should keep the specified number of items from the front of an array, discarding the rest
+takeWhile should keep all values that match a predicate from the front of an array
+take should keep the specified number of items from the end of an array, discarding the rest
+drop should remove the specified number of items from the front of an array
+dropWhile should remove all values that match a predicate from the front of an array
+drop should remove the specified number of items from the end of an array
+take and drop should treat negative arguments as zero
+span should split an array in two based on a predicate
+span with all elements satisfying the predicate
+span with no elements satisfying the predicate
+span with large inputs: 10000
+span with large inputs: 40000
+span with large inputs: 100000
+group should group consecutive equal elements into arrays
+groupAll should group equal elements into arrays
+groupBy should group consecutive equal elements into arrays based on an equivalence relation
+groupBy should be stable
+groupAllBy should group equal elements into arrays based on the result of a comparison function
+groupAllBy should be stable
+nub should remove duplicate elements from the list, keeping the first occurence
+nub should preserve order
+nubEq should remove duplicate elements from the list, keeping the first occurence
+nubEq should preserve order
+nubBy should remove duplicate items from the list using a supplied predicate
+nubByEq should remove duplicate items from the list using a supplied predicate
+union should produce the union of two arrays
+unionBy should produce the union of two arrays using the specified equality relation
+delete should remove the first matching item from an array
+deleteBy should remove the first equality-relation-matching item from an array
+(\\) should return the difference between two lists
+intersect should return the intersection of two arrays
+intersectBy should return the intersection of two arrays using the specified equivalence relation
+zipWith should use the specified function to zip two lists together
+zipWithA should use the specified function to zip two lists together
+zip should use the specified function to zip two lists together
+unzip should deconstruct a list of tuples into a tuple of lists
+any should return true if at least one array element satisfy the given predicate
+all should return true if all the array elements satisfy the given predicate
+foldM should perform a fold using a monadic step function
+fromFoldable
+fromFoldable is stack safe
+toUnfoldable
+run should produce an immutable array by running a constructor operation
+withArray should run an operation on a copy of an array
+empty should produce an empty array
+thaw should produce an STArray from a standard array
+freeze should produce a standard array from an STArray
+clone should produce a shallow copy of an STArray
+unsafeThaw should produce an STArray from a standard array
+length should return the number of items in an STArray
+pop should remove elements from an STArray
+pop should return the last element of an STArray
+pop should return Nothing when given an empty array
+push should append a value to the end of the array
+push should return the new length of the array
+pushAll should append multiple values to the end of the array
+pushAll should return the new length of the array
+peek should return Nothing when peeking a value outside the array bounds
+peek should return the value at the specified index
+poke should return true when a value has been updated succesfully
+poke should return false when attempting to modify a value outside the array bounds
+poke should replace the value at the specified index
+poke should do nothing when attempting to modify a value outside the array bounds
+shift should remove elements from an STArray
+shift should return the first element of an STArray
+shift should return Nothing when given an empty array
+unshift should append a value to the front of the array
+unshift should return the new length of the array
+unshiftAll should append multiple values to the front of the array
+unshiftAll should return the new length of the array
+sort should reorder a list into ascending order based on the result of compare
+sortBy should reorder a list into ascending order based on the result of a comparison function
+sortBy should not reorder elements that are equal according to a comparison function
+sortWith should reorder a list into ascending order based on the result of compare over a projection
+sortWith should not reorder elements that are equal according to a projection
+splice should be able to delete multiple items at a specified index
+splice should return the items removed
+splice should be able to insert multiple items at a specified index
+splice should be able to delete and insert at the same time
+toAssocArray should return all items in the array with the correct indices and values
+head should return the first item in an array
+tail should return all but the first item in an array
+last should return the last item of an array
+init should return all but the last item of an array
+peekSTArray should return the value at the specified index
+pokeSTArray should modify the value at the specified index
+singleton should construct an array with a single value
+range should create an inclusive array of integers for the specified start and end
+replicate should produce an array containg an item a specified number of times
+length should return the number of items in an array
+cons should add an item to the start of an array
+snoc should add an item to the end of an array
+insert should add an item at the appropriate place in a sorted array
+insertBy should add an item at the appropriate place in a sorted array using the specified comparison
+head should return the first value of a non-empty array
+last should return the last value of a non-empty array
+tail should return an array containing all the items in an array apart from the first for a non-empty array
+init should return an array containing all the items in an array apart from the first for a non-empty array
+uncons should split an array into a head and tail record
+unsnoc should split an array into an init and last record
+index should return Just x when the index is within the bounds of the array
+index should return Nothing when the index is outside of the bounds of the array
+elem should return true if the array contains the given element at least once
+notElem should return true if the array does not contain the given element
+elemIndex should return the index of an item that a predicate returns true for in an array
+elemLastIndex should return the last index of an item in an array
+find should return the first element for which a predicate returns true in an array
+findMap should return the mapping of the first element that satisfies the given predicate
+findIndex should return the index of an item that a predicate returns true for in an array
+findLastIndex should return the last index of an item in an array
+insertAt should add an item at the specified index
+insertAt should return Nothing if the index is out of A.range
+deleteAt should remove an item at the specified index
+deleteAt should return Nothing if the index is out of A.range
+updateAt should replace an item at the specified index
+updateAt should return Nothing if the index is out of A.range
+modifyAt should update an item at the specified index
+modifyAt should return Nothing if the index is out of A.range
+alterAt should update an item at the specified index when the function returns Just
+alterAt should drop an item at the specified index when the function returns Nothing
+alterAt should return Nothing if the index is out of NEA.range
+intersperse should return the original array when given an array with one element
+intersperse should insert the given element in-between each element in an array with two or more elements
+reverse should reverse the order of items in an array
+concat should join an array of arrays
+concatMap should be equivalent to (concat <<< map)
+filter should remove items that don't match a predicate
+splitAt should split the array at the given number of elements
+filterA should remove items that don't match a predicate while using an applicative behaviour
+filterA should apply effects in the right order
+mapMaybe should transform every item in an array, throwing out Nothing values
+catMaybe should take an array of Maybe values and throw out Nothings
+mapWithIndex applies a function with an index for every element
+scanl should return an array that stores the accumulated value at each step
+scanl should return the same results as its Foldable counterpart
+scanr should return an array that stores the accumulated value at each step
+scanr should return the same results as its Foldable counterpart
+updateAtIndices changes the elements at specified indices
+modifyAtIndices modifies the elements at specified indices
+sort should reorder a list into ascending order based on the result of compare
+sortBy should reorder a list into ascending order based on the result of a comparison function
+sortWith should reorder a list into ascending order based on the result of compare over a projection
+take should keep the specified number of items from the front of an array, discarding the rest
+takeWhile should keep all values that match a predicate from the front of an array
+take should keep the specified number of items from the end of an array, discarding the rest
+drop should remove the specified number of items from the front of an array
+dropWhile should remove all values that match a predicate from the front of an array
+drop should remove the specified number of items from the end of an array
+span should split an array in two based on a predicate
+group should group consecutive equal elements into arrays
+groupAll should group equal elements into arrays
+groupBy should group consecutive equal elements into arrays based on an equivalence relation
+groupBy should be stable
+groupAllBy should group equal elements into arrays based on the result of a comparison function
+groupAllBy should be stable
+nub should remove duplicate elements from the list, keeping the first occurence
+nubEq should remove duplicate elements from the list, keeping the first occurence
+nubByEq should remove duplicate items from the list using a supplied predicate
+union should produce the union of two arrays
+unionBy should produce the union of two arrays using the specified equality relation
+delete should remove the first matching item from an array
+deleteBy should remove the first equality-relation-matching item from an array
+intersect should return the intersection of two arrays
+intersectBy should return the intersection of two arrays using the specified equivalence relation
+zipWith should use the specified function to zip two arrays together
+zipWithA should use the specified function to zip two lists together
+zip should use the specified function to zip two lists together
+unzip should deconstruct a list of tuples into a tuple of lists
+any should return true if at least one array element satisfy the given predicate
+all should return true if all the array elements satisfy the given predicate
+fromFoldable
+toUnfoldable
+toUnfoldable1
+Unfoldable instance
+foldMap1 should work
+fold1 should work
+foldr1 should work
+foldl1 should work
+traverse1 should work
+transpose swaps rows and columns for a regular two-dimension array
+transpose skips elements when rows don't match
+transpose' handles the singleton empty array
+transpose' swaps rows and columns for a regular two-dimension array
+transpose' skips elements when rows don't match
+Additional: captured callbacks and records across an opaque FFI boundary
+Additional: immutable snapshots and independent ST allocations
+Additional: ST actions execute only when run and can be replayed
+Additional: checked ST bounds preserve the array
+Additional: iterator peek, next, pushWhile, pushAll and iterate
+Additional: replicateA effect count, deferred execution and replay
+Additional Array checks passed
