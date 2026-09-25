@@ -6,6 +6,7 @@ pub fn Data_Array_length(xs: UnknownType) -> i64 {
     xs.unwrap_array().len() as i64
 }
 
+#[inline]
 pub fn Data_Array_rangeImpl() -> UnknownType {
     Value::Func2(Func2::Static(|start, end| {
         let start = start.unwrap_int();
@@ -73,9 +74,11 @@ pub fn Data_Array_indexImpl() -> UnknownType {
 
 pub fn Data_Array_findMapImpl() -> UnknownType {
     Value::Func4(Func4::Static(|nothing, is_just, f, xs| {
+        let f = f.unwrap_func1();
+        let is_just = is_just.unwrap_func1();
         for value in xs.unwrap_array().iter() {
-            let result = f.unwrap_func1()(value.clone());
-            if is_just.unwrap_func1()(result.clone()).unwrap_bool() {
+            let result = f(value.clone());
+            if is_just(result.clone()).unwrap_bool() {
                 return result;
             }
         }
@@ -85,9 +88,11 @@ pub fn Data_Array_findMapImpl() -> UnknownType {
 
 pub fn Data_Array_findIndexImpl() -> UnknownType {
     Value::Func4(Func4::Static(|just, nothing, f, xs| {
+        let f = f.unwrap_func1();
+        let just = just.unwrap_func1();
         for (i, value) in xs.unwrap_array().iter().enumerate() {
-            if f.unwrap_func1()(value.clone()).unwrap_bool() {
-                return just.unwrap_func1()(Value::Int(i as i64));
+            if f(value.clone()).unwrap_bool() {
+                return just(Value::Int(i as i64));
             }
         }
         nothing
@@ -96,9 +101,11 @@ pub fn Data_Array_findIndexImpl() -> UnknownType {
 
 pub fn Data_Array_findLastIndexImpl() -> UnknownType {
     Value::Func4(Func4::Static(|just, nothing, f, xs| {
+        let f = f.unwrap_func1();
+        let just = just.unwrap_func1();
         for (i, value) in xs.unwrap_array().iter().enumerate().rev() {
-            if f.unwrap_func1()(value.clone()).unwrap_bool() {
-                return just.unwrap_func1()(Value::Int(i as i64));
+            if f(value.clone()).unwrap_bool() {
+                return just(Value::Int(i as i64));
             }
         }
         nothing
@@ -156,24 +163,33 @@ pub fn Data_Array_concat(arrays: UnknownType) -> UnknownType {
     mk_array(result)
 }
 
+// Call sites pass callbacks whose concrete representation is often known
+// where the call is emitted; cross-crate inlining exposes it to the optimizer.
+#[inline]
 pub fn Data_Array_filterImpl() -> UnknownType {
     Value::Func2(Func2::Static(|f, xs| {
-        mk_array(
-            xs.unwrap_array()
-                .iter()
-                .filter(|x| f.unwrap_func1()((*x).clone()).unwrap_bool())
-                .cloned()
-                .collect(),
-        )
+        // Resolve the callback once: the Value-level wrapper is rebuilt per
+        // element otherwise, and the result is known to be at most as long as
+        // the input, so a single exact allocation replaces the growth steps.
+        let f = f.unwrap_func1();
+        let xs = xs.unwrap_array();
+        let mut result = Vec::with_capacity(xs.len());
+        for value in xs.iter() {
+            if f(value.clone()).unwrap_bool() {
+                result.push(value.clone());
+            }
+        }
+        mk_array(result)
     }))
 }
 
 pub fn Data_Array_partitionImpl() -> UnknownType {
     Value::Func2(Func2::Static(|f, xs| {
+        let f = f.unwrap_func1();
         let mut yes = Vec::new();
         let mut no = Vec::new();
         for value in xs.unwrap_array().iter() {
-            if f.unwrap_func1()(value.clone()).unwrap_bool() {
+            if f(value.clone()).unwrap_bool() {
                 yes.push(value.clone());
             } else {
                 no.push(value.clone());
@@ -188,9 +204,11 @@ pub fn Data_Array_partitionImpl() -> UnknownType {
 
 pub fn Data_Array_scanlImpl() -> UnknownType {
     Value::Func3(Func3::Static(|f, mut acc, xs| {
-        let mut result = Vec::new();
-        for value in xs.unwrap_array().iter() {
-            acc = f.unwrap_func2()(acc, value.clone());
+        let f = f.unwrap_func2();
+        let xs = xs.unwrap_array();
+        let mut result = Vec::with_capacity(xs.len() + 1);
+        for value in xs.iter() {
+            acc = f(acc, value.clone());
             result.push(acc.clone());
         }
         mk_array(result)
@@ -199,9 +217,11 @@ pub fn Data_Array_scanlImpl() -> UnknownType {
 
 pub fn Data_Array_scanrImpl() -> UnknownType {
     Value::Func3(Func3::Static(|f, mut acc, xs| {
-        let mut result = Vec::new();
-        for value in xs.unwrap_array().iter().rev() {
-            acc = f.unwrap_func2()(value.clone(), acc);
+        let f = f.unwrap_func2();
+        let xs = xs.unwrap_array();
+        let mut result = Vec::with_capacity(xs.len() + 1);
+        for value in xs.iter().rev() {
+            acc = f(value.clone(), acc);
             result.push(acc.clone());
         }
         result.reverse();
@@ -211,9 +231,12 @@ pub fn Data_Array_scanrImpl() -> UnknownType {
 
 pub fn Data_Array_sortByImpl() -> UnknownType {
     Value::Func3(Func3::Static(|compare, from_ordering, xs| {
+        // The comparator runs O(n log n) times; resolve both callbacks once.
+        let compare = compare.unwrap_func2();
+        let from_ordering = from_ordering.unwrap_func1();
         let mut result = xs.unwrap_array().as_ref().clone();
         result.sort_by(|left, right| {
-            from_ordering.unwrap_func1()(compare.unwrap_func2()(left.clone(), right.clone()))
+            from_ordering(compare(left.clone(), right.clone()))
                 .unwrap_int()
                 .cmp(&0)
         });
@@ -234,33 +257,28 @@ pub fn Data_Array_sliceImpl() -> UnknownType {
 
 pub fn Data_Array_zipWithImpl() -> UnknownType {
     Value::Func3(Func3::Static(|f, xs, ys| {
-        mk_array(
-            xs.unwrap_array()
-                .iter()
-                .zip(ys.unwrap_array().iter())
-                .map(|(x, y)| f.unwrap_func2()(x.clone(), y.clone()))
-                .collect(),
-        )
+        let f = f.unwrap_func2();
+        let xs = xs.unwrap_array();
+        let ys = ys.unwrap_array();
+        let mut result = Vec::with_capacity(xs.len().min(ys.len()));
+        for (x, y) in xs.iter().zip(ys.iter()) {
+            result.push(f(x.clone(), y.clone()));
+        }
+        mk_array(result)
     }))
 }
 
 pub fn Data_Array_anyImpl() -> UnknownType {
     Value::Func2(Func2::Static(|f, xs| {
-        Value::Bool(
-            xs.unwrap_array()
-                .iter()
-                .any(|x| f.unwrap_func1()(x.clone()).unwrap_bool()),
-        )
+        let f = f.unwrap_func1();
+        Value::Bool(xs.unwrap_array().iter().any(|x| f(x.clone()).unwrap_bool()))
     }))
 }
 
 pub fn Data_Array_allImpl() -> UnknownType {
     Value::Func2(Func2::Static(|f, xs| {
-        Value::Bool(
-            xs.unwrap_array()
-                .iter()
-                .all(|x| f.unwrap_func1()(x.clone()).unwrap_bool()),
-        )
+        let f = f.unwrap_func1();
+        Value::Bool(xs.unwrap_array().iter().all(|x| f(x.clone()).unwrap_bool()))
     }))
 }
 
