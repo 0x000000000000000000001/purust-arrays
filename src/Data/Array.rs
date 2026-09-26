@@ -3,7 +3,8 @@ use std::rc::Rc;
 use std::sync::Mutex;
 
 pub fn Data_Array_length(xs: UnknownType) -> i64 {
-    xs.unwrap_array().len() as i64
+    // A length read must not clone the backing buffer reference.
+    xs.array_len() as i64
 }
 
 #[inline]
@@ -61,12 +62,9 @@ pub fn Data_Array_unconsImpl() -> UnknownType {
 
 pub fn Data_Array_indexImpl() -> UnknownType {
     Value::Func4(Func4::Static(|just, nothing, xs, index| {
-        let xs = xs.unwrap_array();
-        match usize::try_from(index.unwrap_int())
-            .ok()
-            .and_then(|i| xs.get(i))
-        {
-            Some(value) => just.unwrap_func1()(value.clone()),
+        let just = just.unwrap_func1();
+        match usize::try_from(index.unwrap_int()).ok().filter(|i| *i < xs.array_len()) {
+            Some(i) => just(xs.array_get(i)),
             None => nothing,
         }
     }))
@@ -284,6 +282,7 @@ pub fn Data_Array_allImpl() -> UnknownType {
 
 pub fn Data_Array_unsafeIndexImpl() -> UnknownType {
     Value::Func2(Func2::Static(|xs, index| {
-        xs.unwrap_array()[index.unwrap_int() as usize].clone()
+        // Borrow the buffer and clone only the read element.
+        xs.array_get(index.unwrap_int() as usize)
     }))
 }
