@@ -12,10 +12,11 @@ pub fn Data_Array_rangeImpl() -> UnknownType {
     Value::Func2(Func2::Static(|start, end| {
         let start = start.unwrap_int();
         let end = end.unwrap_int();
-        mk_array(if start <= end {
-            (start..=end).map(Value::Int).collect()
+        // Ranges are monomorphic Int arrays: keep the elements unboxed.
+        mk_int_array(if start <= end {
+            (start..=end).collect()
         } else {
-            (end..=start).rev().map(Value::Int).collect()
+            (end..=start).rev().collect()
         })
     }))
 }
@@ -170,14 +171,27 @@ pub fn Data_Array_filterImpl() -> UnknownType {
         // element otherwise, and the result is known to be at most as long as
         // the input, so a single exact allocation replaces the growth steps.
         let f = f.unwrap_func1();
-        let xs = xs.unwrap_array();
-        let mut result = Vec::with_capacity(xs.len());
-        for value in xs.iter() {
-            if f(value.clone()).unwrap_bool() {
-                result.push(value.clone());
+        match purust_core::IntItems::from(&xs) {
+            // Filtering an unboxed Int array keeps it unboxed.
+            purust_core::IntItems::Ints(values) => {
+                let mut result = Vec::with_capacity(values.len());
+                for value in values.iter() {
+                    if f(Value::Int(*value)).unwrap_bool() {
+                        result.push(*value);
+                    }
+                }
+                mk_int_array(result)
+            }
+            purust_core::IntItems::Boxed(values) => {
+                let mut result = Vec::with_capacity(values.len());
+                for value in values.iter() {
+                    if f(value.clone()).unwrap_bool() {
+                        result.push(value.clone());
+                    }
+                }
+                mk_array(result)
             }
         }
-        mk_array(result)
     }))
 }
 
