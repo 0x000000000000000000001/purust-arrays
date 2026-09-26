@@ -23,7 +23,12 @@ pub fn Data_Array_rangeImpl() -> UnknownType {
 
 pub fn Data_Array_replicateImpl() -> UnknownType {
     Value::Func2(Func2::Static(|count, value| {
-        mk_array(vec![value; count.unwrap_int().max(0) as usize])
+        let count = count.unwrap_int().max(0) as usize;
+        // Replicating an Int keeps the elements unboxed.
+        match value {
+            Value::Int(v) => mk_int_array(vec![v; count]),
+            other => mk_array(vec![other; count]),
+        }
     }))
 }
 
@@ -151,7 +156,10 @@ pub fn Data_Array__updateAt() -> UnknownType {
 }
 
 pub fn Data_Array_reverse(xs: UnknownType) -> UnknownType {
-    mk_array(xs.unwrap_array().iter().rev().cloned().collect())
+    match purust_core::IntItems::from(&xs) {
+        purust_core::IntItems::Ints(values) => mk_int_array(values.iter().rev().copied().collect()),
+        purust_core::IntItems::Boxed(values) => mk_array(values.iter().rev().cloned().collect()),
+    }
 }
 
 pub fn Data_Array_concat(arrays: UnknownType) -> UnknownType {
@@ -258,12 +266,18 @@ pub fn Data_Array_sortByImpl() -> UnknownType {
 
 pub fn Data_Array_sliceImpl() -> UnknownType {
     Value::Func3(Func3::Static(|start, end, xs| {
-        let xs = xs.unwrap_array();
-        let len = xs.len() as i64;
+        let len = match purust_core::IntItems::from(&xs) {
+            purust_core::IntItems::Ints(ref values) => values.len() as i64,
+            purust_core::IntItems::Boxed(ref values) => values.len() as i64,
+        };
         let normalize = |i: i64| if i < 0 { (len + i).max(0) } else { i.min(len) } as usize;
         let start = normalize(start.unwrap_int());
         let end = normalize(end.unwrap_int()).max(start);
-        mk_array(xs[start..end].to_vec())
+        // Slicing an unboxed Int array keeps it unboxed.
+        match purust_core::IntItems::from(&xs) {
+            purust_core::IntItems::Ints(values) => mk_int_array(values[start..end].to_vec()),
+            purust_core::IntItems::Boxed(values) => mk_array(values[start..end].to_vec()),
+        }
     }))
 }
 
