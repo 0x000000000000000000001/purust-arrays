@@ -216,8 +216,8 @@ pub fn Data_Array_partitionImpl() -> UnknownType {
             }
         }
         let mut record = Record_a::default();
-        record.yes = Some(mk_array(yes));
-        record.no = Some(mk_array(no));
+        record.set_field("yes", mk_array(yes));
+        record.set_field("no", mk_array(no));
         Value::Record_a(PerceusPtr::new(record))
     }))
 }
