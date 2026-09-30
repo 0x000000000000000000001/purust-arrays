@@ -80,8 +80,8 @@ pub fn Data_Array_findMapImpl() -> UnknownType {
     Value::Func4(Func4::Static(|nothing, is_just, f, xs| {
         let f = f.unwrap_func1();
         let is_just = is_just.unwrap_func1();
-        for value in xs.unwrap_array().iter() {
-            let result = f(value.clone());
+        for value in xs.array_iter() {
+            let result = f(value);
             if is_just(result.clone()).unwrap_bool() {
                 return result;
             }
@@ -94,8 +94,8 @@ pub fn Data_Array_findIndexImpl() -> UnknownType {
     Value::Func4(Func4::Static(|just, nothing, f, xs| {
         let f = f.unwrap_func1();
         let just = just.unwrap_func1();
-        for (i, value) in xs.unwrap_array().iter().enumerate() {
-            if f(value.clone()).unwrap_bool() {
+        for (i, value) in xs.array_iter().enumerate() {
+            if f(value).unwrap_bool() {
                 return just(Value::Int(i as i64));
             }
         }
@@ -107,8 +107,8 @@ pub fn Data_Array_findLastIndexImpl() -> UnknownType {
     Value::Func4(Func4::Static(|just, nothing, f, xs| {
         let f = f.unwrap_func1();
         let just = just.unwrap_func1();
-        for (i, value) in xs.unwrap_array().iter().enumerate().rev() {
-            if f(value.clone()).unwrap_bool() {
+        for (i, value) in xs.array_iter().enumerate().rev() {
+            if f(value).unwrap_bool() {
                 return just(Value::Int(i as i64));
             }
         }
@@ -159,13 +159,14 @@ pub fn Data_Array_reverse(xs: UnknownType) -> UnknownType {
     match purust_core::IntItems::from(&xs) {
         purust_core::IntItems::Ints(values) => mk_int_array(values.iter().rev().copied().collect()),
         purust_core::IntItems::Boxed(values) => mk_array(values.iter().rev().cloned().collect()),
+        purust_core::IntItems::Native(_) => mk_array(xs.array_iter().rev().collect()),
     }
 }
 
 pub fn Data_Array_concat(arrays: UnknownType) -> UnknownType {
     let mut result = Vec::new();
-    for xs in arrays.unwrap_array().iter() {
-        result.extend(xs.unwrap_array().iter().cloned());
+    for xs in arrays.array_iter() {
+        result.extend(xs.array_iter());
     }
     mk_array(result)
 }
@@ -199,6 +200,9 @@ pub fn Data_Array_filterImpl() -> UnknownType {
                 }
                 mk_array(result)
             }
+            purust_core::IntItems::Native(_) => {
+                mk_array(xs.array_iter().filter(|value| f(value.clone()).unwrap_bool()).collect())
+            }
         }
     }))
 }
@@ -208,11 +212,11 @@ pub fn Data_Array_partitionImpl() -> UnknownType {
         let f = f.unwrap_func1();
         let mut yes = Vec::new();
         let mut no = Vec::new();
-        for value in xs.unwrap_array().iter() {
+        for value in xs.array_iter() {
             if f(value.clone()).unwrap_bool() {
-                yes.push(value.clone());
+                yes.push(value);
             } else {
-                no.push(value.clone());
+                no.push(value);
             }
         }
         let mut record = Record_a::default();
@@ -225,10 +229,10 @@ pub fn Data_Array_partitionImpl() -> UnknownType {
 pub fn Data_Array_scanlImpl() -> UnknownType {
     Value::Func3(Func3::Static(|f, mut acc, xs| {
         let f = f.unwrap_func2();
-        let xs = xs.unwrap_array();
+        let xs = xs.array_iter();
         let mut result = Vec::with_capacity(xs.len() + 1);
-        for value in xs.iter() {
-            acc = f(acc, value.clone());
+        for value in xs {
+            acc = f(acc, value);
             result.push(acc.clone());
         }
         mk_array(result)
@@ -238,10 +242,10 @@ pub fn Data_Array_scanlImpl() -> UnknownType {
 pub fn Data_Array_scanrImpl() -> UnknownType {
     Value::Func3(Func3::Static(|f, mut acc, xs| {
         let f = f.unwrap_func2();
-        let xs = xs.unwrap_array();
+        let xs = xs.array_iter();
         let mut result = Vec::with_capacity(xs.len() + 1);
-        for value in xs.iter().rev() {
-            acc = f(value.clone(), acc);
+        for value in xs.rev() {
+            acc = f(value, acc);
             result.push(acc.clone());
         }
         result.reverse();
@@ -266,10 +270,7 @@ pub fn Data_Array_sortByImpl() -> UnknownType {
 
 pub fn Data_Array_sliceImpl() -> UnknownType {
     Value::Func3(Func3::Static(|start, end, xs| {
-        let len = match purust_core::IntItems::from(&xs) {
-            purust_core::IntItems::Ints(ref values) => values.len() as i64,
-            purust_core::IntItems::Boxed(ref values) => values.len() as i64,
-        };
+        let len = xs.array_len() as i64;
         let normalize = |i: i64| if i < 0 { (len + i).max(0) } else { i.min(len) } as usize;
         let start = normalize(start.unwrap_int());
         let end = normalize(end.unwrap_int()).max(start);
@@ -277,6 +278,7 @@ pub fn Data_Array_sliceImpl() -> UnknownType {
         match purust_core::IntItems::from(&xs) {
             purust_core::IntItems::Ints(values) => mk_int_array(values[start..end].to_vec()),
             purust_core::IntItems::Boxed(values) => mk_array(values[start..end].to_vec()),
+            purust_core::IntItems::Native(_) => mk_array(xs.array_iter().skip(start).take(end - start).collect()),
         }
     }))
 }
@@ -284,11 +286,11 @@ pub fn Data_Array_sliceImpl() -> UnknownType {
 pub fn Data_Array_zipWithImpl() -> UnknownType {
     Value::Func3(Func3::Static(|f, xs, ys| {
         let f = f.unwrap_func2();
-        let xs = xs.unwrap_array();
-        let ys = ys.unwrap_array();
+        let xs = xs.array_iter();
+        let ys = ys.array_iter();
         let mut result = Vec::with_capacity(xs.len().min(ys.len()));
-        for (x, y) in xs.iter().zip(ys.iter()) {
-            result.push(f(x.clone(), y.clone()));
+        for (x, y) in xs.zip(ys) {
+            result.push(f(x, y));
         }
         mk_array(result)
     }))
@@ -297,14 +299,14 @@ pub fn Data_Array_zipWithImpl() -> UnknownType {
 pub fn Data_Array_anyImpl() -> UnknownType {
     Value::Func2(Func2::Static(|f, xs| {
         let f = f.unwrap_func1();
-        Value::Bool(xs.unwrap_array().iter().any(|x| f(x.clone()).unwrap_bool()))
+        Value::Bool(xs.array_iter().any(|x| f(x).unwrap_bool()))
     }))
 }
 
 pub fn Data_Array_allImpl() -> UnknownType {
     Value::Func2(Func2::Static(|f, xs| {
         let f = f.unwrap_func1();
-        Value::Bool(xs.unwrap_array().iter().all(|x| f(x.clone()).unwrap_bool()))
+        Value::Bool(xs.array_iter().all(|x| f(x).unwrap_bool()))
     }))
 }
 
